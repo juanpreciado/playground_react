@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>React Tutorial</title>
+    <!-- Not present in the tutorial. Just for basic styling. -->
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/widget.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
+</head>
+<body>
+<div id="content"></div>
+<!--<script type="text/babel" src="scripts/example.js"></script>-->
+<script type="text/babel">
+    var TattooOfDayWidget = React.createClass({
+        loadTattooDataFromServer: function() {
+            $.ajax({
+                url:this.props.url,
+                dataType: 'json',
+                cache: false,
+                success: function(data) {
+                    this.setState({data: data.data[0]});
+                }.bind(this),
+                error: function(xhr, status, err) {
+                    console.log("jueputa, un error con la data");
+
+                }.bind(this)
+            });
+        },
+        componentDidMount: function() {
+            this.loadTattooDataFromServer();
+        },
+        componentWillUnmount: function() {
+            this.serverRequest.abort();
+        },
+
+        getInitialState: function() {
+            return {data: []}
+        },
+        render: function () {
+            return(
+
+              <TattooOfDayContainer data={this.state.data}/>
+            );
+        }
+    });
+    var TattooOfDayContainer = React.createClass({
+
+        render : function() {
+            var dataAux = this.props.data;
+
+            if (!dataAux || dataAux == null || dataAux.length == 0) {
+                return <div>Loading...</div>;
+            }
+            if(dataAux && dataAux != null ) {
+                console.log(dataAux);
+                console.log(dataAux.url);
+                console.log("---->");
+                console.log(dataAux.user.data.image_url);
+            }
+            var divInlineStyle = {
+                background: 'url(' + dataAux.url + ')'
+            }
+            return(
+
+                    <div className="tattoo-of-day-main-container" style={divInlineStyle}>
+                        <div className="tattoo-of-day-header">
+                            <h1>Tattoo of the day</h1>
+                            <div>
+
+                                {dataAux.like_count} likes
+                            </div>
+                        </div>
+                        <div className="bottom-container">
+                            <TattooOfDayOwnerContainer tattooOwner={dataAux.user}/>
+                            <a href='' target='_blank'>View</a>
+                        </div>
+                     </div>
+            );
+        }
+    });
+    var  TattooOfDayOwnerContainer = React.createClass({
+        render: function(){
+            console.log(this.props.tattooOwner);
+            return(
+                    <div className="winner-teaser">
+                        <img src={this.props.tattooOwner.data.image_url} />
+                        <span>{this.props.tattooOwner.data.name}</span>
+
+                    </div>
+            );
+        }
+
+    });
+    ReactDOM.render(
+            <TattooOfDayWidget url="http://app.api.sta.tattoodo.com/v1/app/images?length=1&includes=user" />,
+            document.getElementById("content")
+    );
+</script>
+</body>
+</html>
